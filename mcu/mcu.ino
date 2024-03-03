@@ -1,15 +1,19 @@
 // --- Defines ---
-#define TEMP_SENSOR_PIN         (A0)
-#define LED_PIN                 (13)
-#define FLOOD_SENSOR_PIN        (12)
+#define TEMP_SENSOR_PIN             (A0)
+#define LED_PIN                     (13)
+#define FLOOD_SENSOR_PIN            (12)
 
-#define TURN_LED_ON_COMMAND     ('A')
-#define TURN_LED_OFF_COMMAND    ('S')
+#define COMMAND_TURN_LED_ON         ('A')
+#define COMMAND_TURN_LED_OFF        ('S')
+#define COMMAND_GET_TEMPERATURE     ('T')
+#define COMMAND_GET_LED_STATE       ('L')
 
 // --- Function Prototypes ---
-static void readTemp(void);
-static void controlLED(void);
+static double readTemp(void);
+static void setLEDState(uint8_t LEDState);
+static uint8_t getLEDState(void);
 static void readFloodSensorState(void);
+static void serialManager(void);
 
 // --- Function Implementations
 void setup() 
@@ -21,37 +25,25 @@ void setup()
 
 void loop()
 {
-    Serial.println("---------------------------------------------------");
-    readTemp();
-    readFloodSensorState();
-    Serial.println("---------------------------------------------------");
-    controlLED();
-    delay(1000);
+    serialManager();
 }
 
-static void readTemp(void)
+static double readTemp(void)
 {
     uint16_t adcValue = analogRead(TEMP_SENSOR_PIN);
     double voltage = ((double)adcValue / 1024.0) * 5000.0; // Measured in mV
     double temperature = voltage / 10.0;
-    Serial.println("Temperature: " + String(temperature) + "°C");   
+    return temperature;   
 }
 
-static void controlLED(void)
+static void setLEDState(uint8_t LEDState)
 {
-    if (Serial.available())
-    {
-        char receivedCommand = Serial.read();
+    digitalWrite(LED_PIN, LEDState);
+}
 
-        if (TURN_LED_ON_COMMAND == receivedCommand)
-        {
-            digitalWrite(LED_PIN, HIGH);
-        }
-        else if (TURN_LED_OFF_COMMAND == receivedCommand)
-        {
-            digitalWrite(LED_PIN, LOW);
-        }
-    }
+static uint8_t getLEDState(void)
+{
+    return digitalRead(LED_PIN);
 }
 
 static void readFloodSensorState(void)
@@ -59,4 +51,40 @@ static void readFloodSensorState(void)
     uint8_t floodSensorStateValue = digitalRead(FLOOD_SENSOR_PIN);
     String floodSensorStateText = (HIGH == floodSensorStateValue) ? "FLOOD DETECTED" : "NOTHING";
     Serial.println("Flood Sensor State: " + floodSensorStateText);
+}
+
+static void serialManager(void)
+{
+    if (Serial.available())
+    {
+        char receivedCommand = Serial.read();
+
+        switch(receivedCommand)
+        {
+            case COMMAND_TURN_LED_ON:
+            {
+                setLEDState(HIGH);
+                break;
+            }
+            case COMMAND_TURN_LED_OFF:
+            {
+                setLEDState(LOW);
+                break;
+            }
+            case COMMAND_GET_TEMPERATURE:
+            {
+                double temperature = readTemp();
+                Serial.println(String(temperature));
+                break;
+            }
+            case COMMAND_GET_LED_STATE:
+            {
+                uint8_t LEDState = getLEDState();
+                Serial.println(((LEDState) ? ("HIGH") : ("LOW")));
+                break;
+            }
+            default:
+                break;
+        }
+    }
 }
