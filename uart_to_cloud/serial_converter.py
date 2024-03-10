@@ -4,36 +4,83 @@ import time
 
 COM_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 9600
-TIMEOUT = 0.1
+SERIAL_TIMEOUT = 0.1
+LOOP_TIMEOUT = 1
+INIT_TIMEOUT = 3
+
 MAIN_URL = "http://127.0.0.1:5000"
 TEMPERATURE_POST_API = "/temperature/post"
-LED_STATE_POST_API = "/led_state/post"
-LED_STATE_GET_API = "/led_state/get"
+DEVICE_LED_STATE_POST_API = "/device_led_state/post"
+CLOUD_LED_STATE_GET_API = "/cloud_led_state/get"
 
-def temperature_post_api(temperature):
-    requests.post(MAIN_URL + TEMPERATURE_POST_API, data=temperature)
+DEVICE_COMMAND_TURN_LED_ON = "A"
+DEVICE_COMMAND_TURN_LED_OFF = "S"
+DEVICE_COMMAND_GET_TEMPERATURE = "T"
+DEVICE_COMMAND_GET_LED_STATE  = "L"
 
-def led_state_post_api(led_state):
-    requests.post(MAIN_URL + LED_STATE_POST_API, data=led_state)
+class SerialConverter:
+    def __init__(self):
+        self._serialManager = serial.Serial(COM_PORT, BAUD_RATE, timeout=SERIAL_TIMEOUT)
 
-def led_state_get_api():
-    led_state = requests.get(MAIN_URL + LED_STATE_GET_API).content.decode('utf-8')
-    print(led_state)
+    def _sendCommand(self, command):
+        self._serialManager.write(command.encode('utf-8'))
+        time.sleep(SERIAL_TIMEOUT)
+        output = self._serialManager.readline()
+        return output
+
+    def send_temperature_to_cloud(self):
+        print("TEMPERATURE -> CLOUD")
+        temperature = self._sendCommand(DEVICE_COMMAND_GET_TEMPERATURE)
+        if temperature:
+            requests.post(MAIN_URL + TEMPERATURE_POST_API, data=temperature)
+        else:
+            print("Error: couldn't get the temperature from the device")
+
+    def send_led_state_to_cloud(self):
+        print("LED_STATE   -> CLOUD")
+        led_state = self._sendCommand(DEVICE_COMMAND_GET_LED_STATE)
+        if led_state:
+            requests.post(MAIN_URL + DEVICE_LED_STATE_POST_API, data=led_state)
+        else:
+            print("Error: couldn't get the led state from the device")
+
+    def set_led_state_on_device(self):
+        print("LED_STATE   -> DEVICE")
+        led_state = requests.get(MAIN_URL + CLOUD_LED_STATE_GET_API).content.decode('utf-8')
+        if led_state:
+            if "OFF" == led_state:
+                self._sendCommand(DEVICE_COMMAND_TURN_LED_OFF)
+            elif "ON" == led_state:
+                self._sendCommand(DEVICE_COMMAND_TURN_LED_ON)
+            else:
+                print("Error: incorrect led state received from the cloud")
+        else:
+            print("Error: couldn't get the led state from the cloud")
+
+    def close(self):
+        self._serialManager.close()
 
 def main():
-    serialManager = None
+    serialConverter = None
     try:
-        serialManager = serial.Serial(COM_PORT, BAUD_RATE, timeout=TIMEOUT)
+        serialConverter = SerialConverter()
+
+        time.sleep(INIT_TIMEOUT)
+
+        serialConverter.send_led_state_to_cloud()
+        serialConverter.send_temperature_to_cloud()
+
         while True:
-            cmd_input = input().encode('utf-8')
-            serialManager.write(cmd_input)
-            time.sleep(TIMEOUT)
-            output = serialManager.readline()
-            if output:
-                print(output.decode('utf-8'), end="")
-    except:
-        serialManager.close()
+            print("--------------------------------------")
+            serialConverter.send_temperature_to_cloud()
+            serialConverter.send_led_state_to_cloud()
+            serialConverter.set_led_state_on_device()
+            print("--------------------------------------")
+            time.sleep(LOOP_TIMEOUT)
+
+    except Exception as e:
+        print(e)
+        serialConverter.close()
 
 if __name__ == "__main__":
-    led_state_get_api()
-    # main()
+    main()

@@ -80,7 +80,7 @@ static void serialManager(void)
             case COMMAND_GET_LED_STATE:
             {
                 uint8_t LEDState = getLEDState();
-                Serial.println(((LEDState) ? ("HIGH") : ("LOW")));
+                Serial.println(((LEDState) ? ("ON") : ("OFF")));
                 break;
             }
             default:

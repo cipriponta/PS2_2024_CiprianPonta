@@ -6,6 +6,10 @@
     </head>
     <body>
         <h3>Temperature: {{global_data.temperature}}</h1>
-        <h3>LED State: {{global_data.led_state}}</h1>
+        <h3>LED State: {{global_data.device_led_state}}</h1>
+        <form method="post" action="/">
+            <input type="submit" name="cloud_led_state_on" value="Turn LED ON">
+            <input type="submit" name="cloud_led_state_off" value="Turn LED OFF">
+        </form>
     </body>
 </html>
