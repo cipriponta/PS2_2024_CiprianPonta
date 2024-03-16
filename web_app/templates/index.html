@@ -11,5 +11,22 @@
             <input type="submit" name="cloud_led_state_on" value="Turn LED ON">
             <input type="submit" name="cloud_led_state_off" value="Turn LED OFF">
         </form>
+        <br>
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in global_data.message_table %}
+                <tr>
+                    <td>{{ message.timestamp }}</td>
+                    <td>{{ message.message }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </body>
 </html>

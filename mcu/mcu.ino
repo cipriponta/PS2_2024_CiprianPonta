@@ -137,10 +137,9 @@ static void serialCommandReadMessages(void)
     {
         // Make sure that each message has a string terminator
         messageTable.entry[message_nr].message[EEPROM_MESSAGE_TABLE_MESSAGE_SIZE - 1] = '\0';
-        Serial.println("Message ID: " + String(message_nr) + 
-                       "|Valid: " + String(messageTable.entry[message_nr].valid) + 
-                       "|Timestamp: " + String(messageTable.entry[message_nr].timestamp) + 
-                       "|" + String(messageTable.entry[message_nr].message));
+        Serial.println(String(messageTable.entry[message_nr].valid) + "|" + 
+                       String(messageTable.entry[message_nr].timestamp) + "|" + 
+                       String(messageTable.entry[message_nr].message));
     }
 }
 

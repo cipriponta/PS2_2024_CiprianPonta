@@ -7,6 +7,48 @@ global_data = {
     "temperature" : 0.0,
     "device_led_state" : "OFF",
     "cloud_led_state" : "OFF",
+    "message_table" : [
+        {
+            "message": "1",
+            "timestamp": 0,
+        },
+        {
+            "message": "2",
+            "timestamp": 0,
+        },
+        {
+            "message": "3",
+            "timestamp": 0,
+        },
+        {
+            "message": "4",
+            "timestamp": 0,
+        },
+        {
+            "message": "5",
+            "timestamp": 0,
+        },
+        {
+            "message": "6",
+            "timestamp": 0,
+        },
+        {
+            "message": "7",
+            "timestamp": 0,
+        },
+        {
+            "message": "8",
+            "timestamp": 0,
+        },
+        {
+            "message": "9",
+            "timestamp": 0,
+        },
+        {
+            "message": "10",
+            "timestamp": 0,
+        },
+    ]
 }
 
 @app.route("/", methods=['GET', 'POST'])
