@@ -1,17 +1,20 @@
 <!doctype html>
-<meta http-equiv="refresh" content="1" />
 <html>
     <head>
         <title>PS2 Project</title>
+        <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
     </head>
     <body>
-        <h3>Temperature: {{global_data.temperature}}</h1>
-        <h3>LED State: {{global_data.device_led_state}}</h1>
+        <h3>Temperature: <span hx-get="/temperature/get" hx-trigger="every 1s">{{global_data.temperature}}</span></h1>
+        <h3 >LED State: <span hx-get="/device_led_state/get" hx-trigger="every 1s">{{global_data.device_led_state}}</span></h1>
         <form method="post" action="/">
             <input type="submit" name="cloud_led_state_on" value="Turn LED ON">
             <input type="submit" name="cloud_led_state_off" value="Turn LED OFF">
+            <br>
+            <br>
+            <input type="text" name="message_text_box">
+            <input type="submit" name="message_send" value="Send Message">
         </form>
-        <br>
         <table>
             <thead>
                 <tr>

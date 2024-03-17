@@ -12,6 +12,7 @@ MAIN_URL = "http://127.0.0.1:5000"
 TEMPERATURE_POST_API = "/temperature/post"
 DEVICE_LED_STATE_POST_API = "/device_led_state/post"
 CLOUD_LED_STATE_GET_API = "/cloud_led_state/get"
+MESSAGES_POST_API="/messages/post"
 
 DEVICE_COMMAND_TURN_LED_ON = "A"
 DEVICE_COMMAND_TURN_LED_OFF = "S"
@@ -33,7 +34,6 @@ class SerialConverter:
     def send_temperature_to_cloud(self):
         print("TEMPERATURE  -> CLOUD")
         temperature = self._sendCommand(DEVICE_COMMAND_GET_TEMPERATURE)[0].decode("utf-8").strip()
-        print("Temperature: ", temperature)
         if temperature:
             requests.post(MAIN_URL + TEMPERATURE_POST_API, data=temperature)
         else:
@@ -42,7 +42,6 @@ class SerialConverter:
     def send_led_state_to_cloud(self):
         print("LED_STATE    -> CLOUD")
         led_state = self._sendCommand(DEVICE_COMMAND_GET_LED_STATE)[0].decode("utf-8").strip()
-        print("Led_state: ", led_state)
         if led_state:
             requests.post(MAIN_URL + DEVICE_LED_STATE_POST_API, data=led_state)
         else:
@@ -59,7 +58,7 @@ class SerialConverter:
             else:
                 print("Error: incorrect led state received from the cloud")
         else:
-            print("Error: couldn't get the led state from the cloud")
+            print("Error: couldn't set the new led state to the device")
 
     def send_messages_to_cloud(self):
         print("MESSAGES     -> CLOUD")
@@ -75,7 +74,13 @@ class SerialConverter:
                 message_entry["message"] = decoded_message[2]
                 message_table.append(message_entry)
 
-        print(message_table)
+        if message_table:
+            requests.post(MAIN_URL + MESSAGES_POST_API, json=message_table)
+        else:
+            print("Error: couldn't get the messages from the device")
+
+    def check_new_message_to_device(self):
+        pass
 
     def close(self):
         self._serialManager.close()
@@ -91,14 +96,14 @@ def main():
         serialConverter.send_temperature_to_cloud()
         serialConverter.send_messages_to_cloud()
 
-        # while True:
-        #     print("--------------------------------------")
-        #     serialConverter.send_temperature_to_cloud()
-        #     serialConverter.send_led_state_to_cloud()
-        #     serialConverter.set_led_state_on_device()
-        #     serialConverter.send_messages_to_cloud()
-        #     print("--------------------------------------")
-        #     time.sleep(LOOP_TIMEOUT)
+        while True:
+            print("--------------------------------------")
+            serialConverter.send_temperature_to_cloud()
+            serialConverter.send_led_state_to_cloud()
+            serialConverter.set_led_state_on_device()
+            serialConverter.send_messages_to_cloud()
+            print("--------------------------------------")
+            time.sleep(LOOP_TIMEOUT)
 
     except Exception as e:
         print(e)

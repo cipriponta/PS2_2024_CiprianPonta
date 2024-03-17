@@ -149,7 +149,6 @@ static void serialCommandWriteMessage(void)
     char *token;
     uint32_t timestamp;
     char message[EEPROM_MESSAGE_TABLE_MESSAGE_SIZE];
-    char message2[]="CCACA";
 
     int bufferLength = Serial.readBytesUntil('!', buffer, SERIAL_MESSAGE_BUFFER_SIZE);
     if(SERIAL_MESSAGE_BUFFER_SIZE == bufferLength)
