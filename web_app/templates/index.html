@@ -5,8 +5,8 @@
         <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
     </head>
     <body>
-        <h3>Temperature: <span hx-get="/temperature/get" hx-trigger="every 1s">{{global_data.temperature}}</span></h1>
-        <h3 >LED State: <span hx-get="/device_led_state/get" hx-trigger="every 1s">{{global_data.device_led_state}}</span></h1>
+        <h3>Temperature: <span hx-get="/temperature/get" hx-trigger="load, every 1s"></span></h1>
+        <h3 >LED State: <span hx-get="/device_led_state/get" hx-trigger="load, every 1s"></span></h1>
         <form method="post" action="/">
             <input type="submit" name="cloud_led_state_on" value="Turn LED ON">
             <input type="submit" name="cloud_led_state_off" value="Turn LED OFF">
@@ -22,14 +22,7 @@
                     <th>Message</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for message in global_data.message_table %}
-                <tr>
-                    <td>{{ message.timestamp }}</td>
-                    <td>{{ message.message }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+            <tbody hx-get="/messages/get" hx-trigger="load, every 1s" hx-swap="innerHTML"></tbody>
         </table>
     </body>
 </html>

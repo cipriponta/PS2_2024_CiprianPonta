@@ -2,7 +2,7 @@ import serial
 import requests
 import time
 
-COM_PORT = "COM4"
+COM_PORT = "/dev/ttyUSB0"
 BAUD_RATE = 9600
 SERIAL_TIMEOUT = 0.1
 LOOP_TIMEOUT = 1
@@ -13,6 +13,7 @@ TEMPERATURE_POST_API = "/temperature/post"
 DEVICE_LED_STATE_POST_API = "/device_led_state/post"
 CLOUD_LED_STATE_GET_API = "/cloud_led_state/get"
 MESSAGES_POST_API="/messages/post"
+NEW_MESSAGE_GET_API="/new_message/get"
 
 DEVICE_COMMAND_TURN_LED_ON = "A"
 DEVICE_COMMAND_TURN_LED_OFF = "S"
@@ -79,8 +80,12 @@ class SerialConverter:
         else:
             print("Error: couldn't get the messages from the device")
 
-    def check_new_message_to_device(self):
-        pass
+    def check_new_message_for_device(self):
+        new_message = requests.get(MAIN_URL + NEW_MESSAGE_GET_API).json()
+        if True == new_message["valid"]:
+            print("NEW MESSAGE  -> DEVICE")
+            command = DEVICE_COMMAND_WRITE_MESSAGE + "|{0}|{1}".format(new_message["timestamp"], new_message["message"])
+            self._sendCommand(command)
 
     def close(self):
         self._serialManager.close()
@@ -94,15 +99,19 @@ def main():
 
         serialConverter.send_led_state_to_cloud()
         serialConverter.send_temperature_to_cloud()
+
         serialConverter.send_messages_to_cloud()
 
         while True:
             print("--------------------------------------")
+            
             serialConverter.send_temperature_to_cloud()
             serialConverter.send_led_state_to_cloud()
             serialConverter.set_led_state_on_device()
+
             serialConverter.send_messages_to_cloud()
-            print("--------------------------------------")
+            serialConverter.check_new_message_for_device()
+
             time.sleep(LOOP_TIMEOUT)
 
     except Exception as e:
