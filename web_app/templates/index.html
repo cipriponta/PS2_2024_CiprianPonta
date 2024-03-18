@@ -6,12 +6,13 @@
     </head>
     <body>
         <h3>Temperature: <span hx-get="/temperature/get" hx-trigger="load, every 1s"></span></h1>
-        <h3 >LED State: <span hx-get="/device_led_state/get" hx-trigger="load, every 1s"></span></h1>
+        <h3>LED State: <span hx-get="/device_led_state/get" hx-trigger="load, every 1s"></span></h1>
         <form method="post" action="/">
             <input type="submit" name="cloud_led_state_on" value="Turn LED ON">
             <input type="submit" name="cloud_led_state_off" value="Turn LED OFF">
             <br>
             <br>
+            <h3>Messages</h3>
             <input type="text" name="message_text_box">
             <input type="submit" name="message_send" value="Send Message">
         </form>
@@ -23,6 +24,16 @@
                 </tr>
             </thead>
             <tbody hx-get="/messages/get" hx-trigger="load, every 1s" hx-swap="innerHTML"></tbody>
+        </table>
+        <h3>Floods</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Floods Timestamps</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody hx-get="/floods/get" hx-trigger="load, every 1s" hx-swap="innerHTML"></tbody>
         </table>
     </body>
 </html>
